@@ -39,12 +39,35 @@ FUNDAMENTAL_METRICS = [
     "beta"                  # Beta (volatility)
 ]
 
-# Macroeconomic indicators
+# Macroeconomic indicators (Yahoo Finance tickers)
 MACRO_INDICATORS = {
+    # Indian Market Indices
     "NIFTY50": "^NSEI",           # NIFTY 50 Index
-    "INDIA_VIX": "^INDIAVIX",     # India VIX
+    "NIFTY_BANK": "^NSEBANK",     # NIFTY Bank Index
+    "NIFTY_IT": "^CNXIT",         # NIFTY IT Index
+    "NIFTY_PHARMA": "^CNXPHARMA", # NIFTY Pharma Index
+    "NIFTY_AUTO": "^CNXAUTO",     # NIFTY Auto Index
+    "NIFTY_FMCG": "^CNXFMCG",     # NIFTY FMCG Index
+    "NIFTY_METAL": "^CNXMETAL",   # NIFTY Metal Index
+    "NIFTY_REALTY": "^CNXREALTY", # NIFTY Realty Index
+    "NIFTY_ENERGY": "^CNXENERGY", # NIFTY Energy Index
+    "NIFTY_MIDCAP": "^NSEMDCP50", # NIFTY Midcap 50
+    "NIFTY_SMALLCAP": "NIFTYSMLCAP50.NS", # NIFTY Smallcap 50
+
+    # Volatility and Risk
+    "INDIA_VIX": "^INDIAVIX",     # India VIX (Volatility Index)
+
+    # Currency
     "USD_INR": "INR=X",           # USD/INR exchange rate
-    "10Y_BOND": "^TNX"            # 10-year Treasury (US as proxy)
+
+    # Global Indices (for context)
+    "SP500": "^GSPC",             # S&P 500
+    "DXY": "DX-Y.NYB",            # US Dollar Index
+
+    # Commodities
+    "GOLD": "GC=F",               # Gold futures
+    "CRUDE_OIL": "CL=F",          # Crude oil futures
+    "BRENT": "BZ=F",              # Brent crude oil
 }
 
 # Sector mapping (standard sectors)

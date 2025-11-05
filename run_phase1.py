@@ -33,24 +33,42 @@ def run_data_collection(args):
     # 1.1 Fundamental Data
     if not args.skip_fundamentals:
         print("\n[1.1] Collecting Fundamental Data...")
+        print("This will fetch real data from Yahoo Finance using ISIN-ticker mapping")
         collector = FundamentalDataCollector()
         from phase1_kg.utils.helpers import load_master_data
         master_df = load_master_data(MASTER_CSV_PATH)
-        df_fundamentals = collector.create_synthetic_fundamentals(master_df)
-        output_path = PROCESSED_DATA_DIR / "fundamental_data.csv"
-        df_fundamentals.to_csv(output_path, index=False)
-        print(f"✓ Fundamentals saved: {output_path}")
+        df_fundamentals = collector.collect_fundamentals_for_stocks(master_df)
+
+        if df_fundamentals.empty:
+            print("❌ Failed to collect fundamental data. Check:")
+            print("   1. ISIN-ticker mapping exists (run: python create_isin_ticker_mapping.py)")
+            print("   2. Internet connection is available")
+            print("   3. Yahoo Finance is accessible")
+        else:
+            output_path = PROCESSED_DATA_DIR / "fundamental_data.csv"
+            df_fundamentals.to_csv(output_path, index=False)
+            print(f"✓ Fundamentals saved: {output_path}")
+            print(f"  Collected data for {df_fundamentals['ISIN'].nunique()} stocks")
     else:
         print("\n[1.1] Skipping fundamental data collection")
 
     # 1.2 Macroeconomic Data
     if not args.skip_macro:
         print("\n[1.2] Collecting Macroeconomic Data...")
+        print("This will fetch real data from Yahoo Finance for Indian market indices")
         collector = MacroDataCollector()
-        df_macro = collector.create_synthetic_macro_data(START_DATE, END_DATE)
-        output_path = PROCESSED_DATA_DIR / "macro_data.csv"
-        df_macro.to_csv(output_path, index=False)
-        print(f"✓ Macro data saved: {output_path}")
+        df_macro = collector.collect_all_indicators(START_DATE, END_DATE)
+
+        if df_macro.empty:
+            print("❌ Failed to collect macroeconomic data. Check:")
+            print("   1. Internet connection is available")
+            print("   2. Yahoo Finance is accessible")
+            print("   3. Ticker symbols in config.py are correct")
+        else:
+            output_path = PROCESSED_DATA_DIR / "macro_data.csv"
+            df_macro.to_csv(output_path, index=False)
+            print(f"✓ Macro data saved: {output_path}")
+            print(f"  Collected {len(df_macro.columns)-1} indicators")
     else:
         print("\n[1.2] Skipping macroeconomic data collection")
 
@@ -58,20 +76,20 @@ def run_data_collection(args):
     if not args.skip_sentiment:
         print("\n[1.3] Collecting Sentiment Data...")
         print("Note: This may take significant time. Using sector-level aggregation.")
-        # For now, skip actual sentiment collection to save time
-        # Users can uncomment this when ready to collect real sentiment
-        print("✓ Sentiment collection skipped for speed (can be enabled in run_phase1.py)")
-        # Uncomment below to run actual sentiment analysis:
         analyzer = SentimentAnalyzer()
         df_sentiment = analyzer.collect_historical_sentiment(
-             sectors=STANDARD_SECTORS,
-             start_date=START_DATE,
-             end_date=END_DATE,
-             frequency='M'
-         )
-        output_path = PROCESSED_DATA_DIR / "sentiment_data.csv"
-        df_sentiment.to_csv(output_path, index=False)
-        print(f"✓ Sentiment data saved: {output_path}")
+            sectors=STANDARD_SECTORS,
+            start_date=START_DATE,
+            end_date=END_DATE,
+            frequency='M'
+        )
+
+        if df_sentiment.empty:
+            print("⚠️  Sentiment data collection returned no results")
+        else:
+            output_path = PROCESSED_DATA_DIR / "sentiment_data.csv"
+            df_sentiment.to_csv(output_path, index=False)
+            print(f"✓ Sentiment data saved: {output_path}")
     else:
         print("\n[1.3] Skipping sentiment data collection")
 

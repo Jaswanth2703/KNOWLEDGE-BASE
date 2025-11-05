@@ -96,11 +96,14 @@ class MacroDataCollector:
         if self.cache_enabled:
             cached_data = load_from_cache(cache_key, CACHE_DIR)
             if cached_data is not None:
+                print(f"✓ Loaded macro data from cache")
                 return cached_data
 
         log_step(f"Collecting macroeconomic data from {start_date} to {end_date}")
 
         all_data = []
+        success_count = 0
+        fail_count = 0
 
         for name, ticker in tqdm(self.indicators.items(), desc="Fetching indicators"):
             print(f"\nFetching: {name} ({ticker})")
@@ -109,10 +112,18 @@ class MacroDataCollector:
             if not df.empty:
                 df['indicator_name'] = name
                 all_data.append(df)
+                success_count += 1
+                print(f"  ✓ Success: {len(df)} records")
+            else:
+                fail_count += 1
+                print(f"  ✗ Failed or no data")
 
         if not all_data:
-            print("Warning: No macro data collected!")
+            print("\n❌ No macro data collected! Check tickers and internet connection.")
             return pd.DataFrame()
+
+        print(f"\n✓ Successfully fetched: {success_count}/{len(self.indicators)} indicators")
+        print(f"✗ Failed to fetch: {fail_count}/{len(self.indicators)} indicators")
 
         # Combine all indicators
         df_combined = pd.concat(all_data, ignore_index=True)
@@ -125,7 +136,7 @@ class MacroDataCollector:
             values='value'
         ).reset_index()
 
-        # Resample to monthly
+        # Resample to monthly (align with portfolio data)
         df_wide.set_index('Date', inplace=True)
         df_monthly = df_wide.resample('M').last()  # Use last value of month
         df_monthly.reset_index(inplace=True)
@@ -137,50 +148,11 @@ class MacroDataCollector:
                 df_monthly[f'{col}_change'] = df_monthly[col].diff()
 
         # Cache results
-        if self.cache_enabled:
+        if self.cache_enabled and not df_monthly.empty:
             save_to_cache(df_monthly, cache_key, CACHE_DIR)
 
         return df_monthly
 
-    def create_synthetic_macro_data(
-        self,
-        start_date: str,
-        end_date: str
-    ) -> pd.DataFrame:
-        """
-        Create synthetic macro data for demonstration
-        In production, use actual data
-
-        Args:
-            start_date: Start date
-            end_date: End date
-
-        Returns:
-            DataFrame with synthetic macro indicators
-        """
-        log_step("Creating synthetic macroeconomic data (for demonstration)")
-
-        dates = pd.date_range(start=start_date, end=end_date, freq='M')
-
-        # Create realistic synthetic data
-        np.random.seed(42)
-
-        data = {
-            'Date': dates,
-            'NIFTY50': 15000 + np.cumsum(np.random.randn(len(dates)) * 200),
-            'INDIA_VIX': 15 + np.random.randn(len(dates)) * 3,
-            'USD_INR': 75 + np.cumsum(np.random.randn(len(dates)) * 0.5),
-            '10Y_BOND': 6.5 + np.random.randn(len(dates)) * 0.3
-        }
-
-        df = pd.DataFrame(data)
-
-        # Calculate returns and changes
-        for col in ['NIFTY50', 'INDIA_VIX', 'USD_INR', '10Y_BOND']:
-            df[f'{col}_return'] = df[col].pct_change()
-            df[f'{col}_change'] = df[col].diff()
-
-        return df
 
 
 def main():
@@ -192,14 +164,13 @@ def main():
     # Initialize collector
     collector = MacroDataCollector()
 
-    # Try to collect real data
-    print("\nAttempting to fetch real macroeconomic data...")
+    # Collect real data
+    print("\nFetching real macroeconomic data...")
     df_macro = collector.collect_all_indicators(START_DATE, END_DATE)
 
-    # If real data fetch fails, use synthetic data
     if df_macro.empty:
-        print("\nReal data fetch failed. Using synthetic data for demonstration.")
-        df_macro = collector.create_synthetic_macro_data(START_DATE, END_DATE)
+        print("\n❌ Failed to fetch macroeconomic data. Check internet connection and ticker symbols.")
+        return
 
     print("\n" + "="*80)
     print("MACROECONOMIC DATA SAMPLE")

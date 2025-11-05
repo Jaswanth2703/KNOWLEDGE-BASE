@@ -185,7 +185,7 @@ class FeatureEngineer:
         df['Date'] = pd.to_datetime(df['Date'])
 
         # Merge fundamental data
-        if fundamental_df is not None:
+        if fundamental_df is not None and not fundamental_df.empty:
             fundamental_df['Date'] = pd.to_datetime(fundamental_df['Date'])
             # Merge on ISIN and Date
             df = df.merge(
@@ -194,10 +194,12 @@ class FeatureEngineer:
                 how='left',
                 suffixes=('', '_fund')
             )
-            print(f"✓ Fundamental data merged")
+            print(f"✓ Fundamental data merged ({len(fundamental_df)} records)")
+        else:
+            print(f"⚠️  No fundamental data to merge")
 
         # Merge macroeconomic data
-        if macro_df is not None:
+        if macro_df is not None and not macro_df.empty:
             macro_df['Date'] = pd.to_datetime(macro_df['Date'])
             # Merge on Date only (macro data is not stock-specific)
             df = df.merge(
@@ -206,10 +208,12 @@ class FeatureEngineer:
                 how='left',
                 suffixes=('', '_macro')
             )
-            print(f"✓ Macroeconomic data merged")
+            print(f"✓ Macroeconomic data merged ({len(macro_df)} records)")
+        else:
+            print(f"⚠️  No macroeconomic data to merge")
 
         # Merge sentiment data
-        if sentiment_df is not None:
+        if sentiment_df is not None and not sentiment_df.empty:
             sentiment_df['date'] = pd.to_datetime(sentiment_df['date'])
             # Merge on sector and date
             df = df.merge(
@@ -219,7 +223,9 @@ class FeatureEngineer:
                 how='left',
                 suffixes=('', '_sentiment')
             )
-            print(f"✓ Sentiment data merged")
+            print(f"✓ Sentiment data merged ({len(sentiment_df)} records)")
+        else:
+            print(f"⚠️  No sentiment data to merge")
 
         print(f"✓ Data integration complete. Final shape: {df.shape}")
         return df
