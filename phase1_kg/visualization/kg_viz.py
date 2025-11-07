@@ -396,7 +396,9 @@ def main():
     # Visualize Temporal KG
     temporal_kg_path = GRAPHS_DIR / "temporal_kg.gpickle"
     if temporal_kg_path.exists():
-        temporal_kg = nx.read_gpickle(temporal_kg_path)
+        import pickle
+        with open(temporal_kg_path, 'rb') as f:
+            temporal_kg = pickle.load(f)
         viz = KGVisualizer(temporal_kg, "Temporal_KG")
         viz.visualize_all()
     else:
@@ -405,7 +407,9 @@ def main():
     # Visualize Causal KG
     causal_kg_path = GRAPHS_DIR / "causal_kg.gpickle"
     if causal_kg_path.exists():
-        causal_kg = nx.read_gpickle(causal_kg_path)
+        import pickle
+        with open(causal_kg_path, 'rb') as f:
+            causal_kg = pickle.load(f)
         viz = KGVisualizer(causal_kg, "Causal_KG")
         viz.visualize_all()
     else:

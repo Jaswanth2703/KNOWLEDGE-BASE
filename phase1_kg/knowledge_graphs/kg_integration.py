@@ -14,7 +14,7 @@ from config import GRAPHS_DIR
 from utils.helpers import log_step
 from .temporal_kg import TemporalKG
 from .causal_kg import CausalKG
-
+import pickle
 
 class IntegratedKG:
     """
@@ -219,8 +219,10 @@ class IntegratedKG:
 
     def save(self, filename: str = "integrated_kg.gpickle") -> None:
         """Save integrated graph"""
+        import pickle
         filepath = GRAPHS_DIR / filename
-        nx.write_gpickle(self.graph, filepath)
+        with open(filepath, 'wb') as f:
+            pickle.dump(self.graph, f, protocol=pickle.HIGHEST_PROTOCOL)
         print(f"\n✓ Integrated KG saved to: {filepath}")
 
     @staticmethod

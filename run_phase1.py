@@ -6,7 +6,7 @@ import sys
 from pathlib import Path
 import argparse
 from datetime import datetime
-
+import pickle
 # Add phase1_kg to path
 sys.path.append(str(Path(__file__).parent / "phase1_kg"))
 
@@ -150,12 +150,13 @@ def run_evaluation(args):
     """Step 4: Evaluate knowledge graphs"""
     log_step("STEP 4: KNOWLEDGE GRAPH EVALUATION")
 
-    import networkx as nx
+    import pickle
 
     # 4.1 Evaluate Temporal KG
     if not args.skip_temporal:
         print("\n[4.1] Evaluating Temporal KG...")
-        temporal_kg = nx.read_gpickle(GRAPHS_DIR / "temporal_kg.gpickle")
+        with open(GRAPHS_DIR / "temporal_kg.gpickle", 'rb') as f:
+            temporal_kg = pickle.load(f)
         evaluator = KGEvaluator(temporal_kg, "Temporal_KG")
         evaluator.evaluate_all()
         evaluator.save_results()
@@ -166,7 +167,8 @@ def run_evaluation(args):
     # 4.2 Evaluate Causal KG
     if not args.skip_causal:
         print("\n[4.2] Evaluating Causal KG...")
-        causal_kg = nx.read_gpickle(GRAPHS_DIR / "causal_kg.gpickle")
+        with open(GRAPHS_DIR / "causal_kg.gpickle", 'rb') as f:
+            causal_kg = pickle.load(f)
         evaluator = KGEvaluator(causal_kg, "Causal_KG")
         evaluator.evaluate_all()
         evaluator.save_results()
@@ -179,12 +181,13 @@ def run_visualization(args):
     """Step 5: Generate visualizations"""
     log_step("STEP 5: VISUALIZATION")
 
-    import networkx as nx
+    import pickle
 
     # 5.1 Visualize Temporal KG
     if not args.skip_temporal and not args.skip_viz:
         print("\n[5.1] Visualizing Temporal KG...")
-        temporal_kg = nx.read_gpickle(GRAPHS_DIR / "temporal_kg.gpickle")
+        with open(GRAPHS_DIR / "temporal_kg.gpickle", 'rb') as f:
+            temporal_kg = pickle.load(f)
         viz = KGVisualizer(temporal_kg, "Temporal_KG")
         viz.visualize_all()
         print("✓ Temporal KG visualizations complete")
@@ -194,7 +197,8 @@ def run_visualization(args):
     # 5.2 Visualize Causal KG
     if not args.skip_causal and not args.skip_viz:
         print("\n[5.2] Visualizing Causal KG...")
-        causal_kg = nx.read_gpickle(GRAPHS_DIR / "causal_kg.gpickle")
+        with open(GRAPHS_DIR / "causal_kg.gpickle", 'rb') as f:
+            causal_kg = pickle.load(f)
         viz = KGVisualizer(causal_kg, "Causal_KG")
         viz.visualize_all()
         print("✓ Causal KG visualizations complete")

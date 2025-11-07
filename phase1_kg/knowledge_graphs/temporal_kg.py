@@ -15,7 +15,7 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).parent.parent))
 from config import TEMPORAL_KG_CONFIG, GRAPHS_DIR, PROCESSED_DATA_DIR
 from utils.helpers import log_step
-
+import pickle
 
 class TemporalKG:
     """
@@ -224,13 +224,15 @@ class TemporalKG:
     def save(self, filename: str = "temporal_kg.gpickle") -> None:
         """Save graph to file"""
         filepath = GRAPHS_DIR / filename
-        nx.write_gpickle(self.graph, filepath)
+        with open(filepath, 'wb') as f:
+            pickle.dump(self.graph, f, protocol=pickle.HIGHEST_PROTOCOL)
         print(f"\n✓ Temporal KG saved to: {filepath}")
 
     def load(self, filename: str = "temporal_kg.gpickle") -> nx.MultiDiGraph:
         """Load graph from file"""
         filepath = GRAPHS_DIR / filename
-        self.graph = nx.read_gpickle(filepath)
+        with open(filepath, 'rb') as f:
+            self.graph = pickle.load(f)
         print(f"✓ Temporal KG loaded from: {filepath}")
         return self.graph
 

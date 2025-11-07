@@ -12,7 +12,7 @@ import sys
 from pathlib import Path
 import warnings
 warnings.filterwarnings('ignore')
-
+import pickle
 # Add parent directory to path
 sys.path.append(str(Path(__file__).parent.parent))
 from config import CAUSAL_KG_CONFIG, GRAPHS_DIR, PROCESSED_DATA_DIR
@@ -417,13 +417,15 @@ class CausalKG:
     def save(self, filename: str = "causal_kg.gpickle") -> None:
         """Save graph to file"""
         filepath = GRAPHS_DIR / filename
-        nx.write_gpickle(self.graph, filepath)
+        with open(filepath, 'wb') as f:
+            pickle.dump(self.graph, f, protocol=pickle.HIGHEST_PROTOCOL)
         print(f"\n✓ Causal KG saved to: {filepath}")
 
     def load(self, filename: str = "causal_kg.gpickle") -> nx.DiGraph:
         """Load graph from file"""
         filepath = GRAPHS_DIR / filename
-        self.graph = nx.read_gpickle(filepath)
+        with open(filepath, 'rb') as f:
+            self.graph = pickle.load(f)
         print(f"✓ Causal KG loaded from: {filepath}")
         return self.graph
 

@@ -1,0 +1,99 @@
+{
+  "graph_name": "Temporal_KG",
+  "structural_completeness": {
+    "node_count": 1831,
+    "edge_count": 144891,
+    "density": 0.04324162197491293,
+    "average_degree": 4.971600218459858,
+    "median_degree": 1.0,
+    "max_degree": 707,
+    "min_degree": 0,
+    "degree_std": 40.18582262896533,
+    "degree_distribution": {
+      "0": 47,
+      "1": 1690,
+      "2": 72,
+      "111": 1,
+      "118": 2,
+      "144": 1,
+      "147": 1,
+      "162": 1,
+      "179": 1,
+      "205": 1,
+      "289": 1,
+      "322": 1,
+      "323": 1,
+      "343": 1,
+      "377": 1,
+      "400": 1,
+      "402": 1,
+      "409": 1,
+      "436": 1,
+      "461": 1
+    },
+    "connected_components": 46,
+    "largest_component_size": 1786,
+    "average_clustering": 0.0,
+    "node_type_distribution": {
+      "Fund": 22,
+      "Stock": 1762,
+      "Sector": 2,
+      "TimePeriod": 45
+    },
+    "edge_type_distribution": {
+      "HOLDS": 85008,
+      "ENTERED": 15945,
+      "INCREASED": 19017,
+      "DECREASED": 21880,
+      "EXITED": 1207,
+      "BELONGS_TO_SECTOR": 1834
+    },
+    "completeness_score": 0.9877116329874386
+  },
+  "consistency": {
+    "orphan_nodes_count": 45,
+    "orphan_nodes_pct": 0.024576734025122882,
+    "self_loops_count": 0,
+    "temporal_violations": 0,
+    "is_dag": null,
+    "cycle_count": 0,
+    "cardinality_violations": 0,
+    "missing_attributes_count": 0,
+    "consistency_score": 0.8333333333333334,
+    "violations": [
+      "45 orphan nodes found"
+    ]
+  },
+  "semantic_coherence": {
+    "num_communities": 51,
+    "modularity": 0.44326993131565084,
+    "average_sector_purity": 0.9980506822612085,
+    "temporal_coherence": 1.0,
+    "semantic_coherence_score": 0.7767231772046228
+  },
+  "informativeness": {
+    "unique_attributes": 21,
+    "attributes_per_node_type": {
+      "Fund": 5,
+      "Stock": 3,
+      "Sector": 3,
+      "TimePeriod": 5
+    },
+    "avg_attributes_per_node": 3.0731840524303657,
+    "avg_attributes_per_edge": 5.763304829147428,
+    "redundant_edges": 142978,
+    "information_density": 5.729733782254876,
+    "informativeness_score": 0.5255679677939108
+  },
+  "inferential_utility": {
+    "average_path_length": 1.0,
+    "max_path_length": 1,
+    "reachability": 0.13714285714285715,
+    "max_degree_centrality": 0.9628415300546448,
+    "avg_degree_centrality": 0.005433442861704762,
+    "max_betweenness_centrality": 0,
+    "multi_hop_query_support": 0.0,
+    "inferential_utility_score": 0.3248571428571429
+  },
+  "overall_quality_score": 0.6896386508352896
+}

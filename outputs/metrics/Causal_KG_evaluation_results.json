@@ -1,0 +1,73 @@
+{
+  "graph_name": "Causal_KG",
+  "structural_completeness": {
+    "node_count": 34,
+    "edge_count": 28,
+    "density": 0.024955436720142603,
+    "average_degree": 1.6470588235294117,
+    "median_degree": 1.0,
+    "max_degree": 4,
+    "min_degree": 1,
+    "degree_std": 0.9665692191267637,
+    "degree_distribution": {
+      "1": 21,
+      "2": 7,
+      "3": 3,
+      "4": 3
+    },
+    "connected_components": 9,
+    "largest_component_size": 16,
+    "average_clustering": 0,
+    "node_type_distribution": {
+      "Factor": 15,
+      "Action": 19
+    },
+    "edge_type_distribution": {
+      "CAUSES": 3,
+      "INFLUENCES": 25
+    },
+    "completeness_score": 0.44362745098039214
+  },
+  "consistency": {
+    "orphan_nodes_count": 0,
+    "orphan_nodes_pct": 0.0,
+    "self_loops_count": 0,
+    "temporal_violations": 0,
+    "is_dag": true,
+    "cycle_count": 0,
+    "cardinality_violations": 0,
+    "missing_attributes_count": 0,
+    "consistency_score": 1.0,
+    "violations": []
+  },
+  "semantic_coherence": {
+    "num_communities": 11,
+    "modularity": 0.6651785714285714,
+    "average_sector_purity": 0,
+    "temporal_coherence": 1.0,
+    "semantic_coherence_score": 0.5660714285714286
+  },
+  "informativeness": {
+    "unique_attributes": 5,
+    "attributes_per_node_type": {
+      "Factor": 1,
+      "Action": 1
+    },
+    "avg_attributes_per_node": 1.0,
+    "avg_attributes_per_edge": 4.0,
+    "redundant_edges": 0,
+    "information_density": 2.3548387096774195,
+    "informativeness_score": 0.34
+  },
+  "inferential_utility": {
+    "average_path_length": 1.0,
+    "max_path_length": 1,
+    "reachability": 0.0427807486631016,
+    "max_degree_centrality": 0.12121212121212122,
+    "avg_degree_centrality": 0.0499108734402852,
+    "max_betweenness_centrality": 0.0,
+    "multi_hop_query_support": 0.0,
+    "inferential_utility_score": 0.28711229946524064
+  },
+  "overall_quality_score": 0.5273622358034122
+}

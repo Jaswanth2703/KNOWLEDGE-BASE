@@ -10,7 +10,7 @@ import community  # python-louvain
 from collections import Counter, defaultdict
 import sys
 from pathlib import Path
-
+import pickle
 # Add parent directory to path
 sys.path.append(str(Path(__file__).parent.parent))
 from config import EVALUATION_CONFIG, METRICS_DIR
@@ -559,7 +559,9 @@ def main():
     temporal_kg_path = GRAPHS_DIR / "temporal_kg.gpickle"
 
     if temporal_kg_path.exists():
-        temporal_kg = nx.read_gpickle(temporal_kg_path)
+        import pickle
+        with open(temporal_kg_path, 'rb') as f:
+            temporal_kg = pickle.load(f)
         print(f"✓ Loaded Temporal KG: {temporal_kg.number_of_nodes()} nodes, "
               f"{temporal_kg.number_of_edges()} edges")
 
@@ -574,7 +576,9 @@ def main():
     causal_kg_path = GRAPHS_DIR / "causal_kg.gpickle"
 
     if causal_kg_path.exists():
-        causal_kg = nx.read_gpickle(causal_kg_path)
+        import pickle
+        with open(causal_kg_path, 'rb') as f:
+            causal_kg = pickle.load(f)
         print(f"\n✓ Loaded Causal KG: {causal_kg.number_of_nodes()} nodes, "
               f"{causal_kg.number_of_edges()} edges")
 

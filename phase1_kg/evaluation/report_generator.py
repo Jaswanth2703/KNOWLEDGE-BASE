@@ -7,7 +7,7 @@ import pandas as pd
 from datetime import datetime
 from pathlib import Path
 import sys
-
+import pickle
 # Add parent directory to path
 sys.path.append(str(Path(__file__).parent.parent))
 from config import REPORTS_DIR, METRICS_DIR, FIGURES_DIR
