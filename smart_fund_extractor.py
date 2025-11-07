@@ -11,6 +11,8 @@ import warnings
 from fuzzywuzzy import fuzz
 from collections import defaultdict
 import json
+import yfinance as yf
+import time
 
 warnings.filterwarnings('ignore', category=UserWarning, module='openpyxl')
 
@@ -253,6 +255,174 @@ class SmartExtractor:
             return False
         pattern = r'^INE[A-Z0-9]{9}$'
         return bool(re.match(pattern, str(value).strip()))
+
+    def is_valid_stock_name(self, name):
+        """
+        Check if a stock name is valid (not an ISIN code or empty)
+        Valid names should contain company name indicators like Limited, Ltd, Inc, Bank, Fund, etc.
+        """
+        if name is None or pd.isna(name):
+            return False
+
+        name_str = str(name).strip()
+
+        # Check if it's empty or just whitespace
+        if not name_str or len(name_str) == 0:
+            return False
+
+        # Check if it's an ISIN code (starts with INE or similar patterns)
+        if name_str.startswith('INE') or name_str.startswith('IEX'):
+            return False
+
+        # Check if it's just a pipe or special character
+        if name_str in ['|', '-', ' ', 'nan', 'NaN', 'nan', 'Unknown', 'N/A']:
+            return False
+
+        # Valid if contains common company name indicators
+        valid_keywords = [
+            'limited', 'ltd', 'inc', 'corp', 'corporation',
+            'bank', 'financial', 'group', 'company',
+            'industries', 'services', 'systems',
+            'pharma', 'laboratory', 'labs',
+            'energy', 'power', 'oil',
+            'tech', 'technology', 'infosys', 'tcs', 'wipro',
+            'reliance', 'hdfc', 'icici', 'axis',
+            'motors', 'auto', 'steel', 'cement',
+            'textiles', 'chemicals', 'agro',
+            'infrastructure', 'realty', 'estate',
+            'media', 'broadcasting'
+        ]
+
+        name_lower = name_str.lower()
+        if any(kw in name_lower for kw in valid_keywords):
+            return True
+
+        # If it has reasonable length and no numeric-only pattern, might be valid
+        if len(name_str) > 5 and not name_str.replace('.', '').replace(',', '').isnumeric():
+            return True
+
+        return False
+
+    def get_stock_info_from_yahoo(self, ticker):
+        """
+        Get stock name and sector from Yahoo Finance
+
+        Returns:
+            Dict with 'name' and 'sector' keys, or None if fetch fails
+        """
+        try:
+            stock = yf.Ticker(ticker)
+            info = stock.info
+
+            if not info:
+                return None
+
+            # Try to get proper name
+            name = info.get('longName') or info.get('shortName') or info.get('companyName')
+            sector = info.get('sector', 'Other')
+
+            # Handle None/missing
+            if not name:
+                name = None
+            if not sector:
+                sector = 'Other'
+
+            return {
+                'name': name,
+                'sector': sector
+            }
+
+        except Exception as e:
+            return None
+
+    def enrich_master_dataframe(self, master_df):
+        """
+        Enrich master dataframe by:
+        1. Validating stock names
+        2. Fetching proper names from Yahoo Finance for invalid ones
+        3. Adding sector information
+
+        Returns:
+            Enriched dataframe with valid Stock_Name and Sector columns
+        """
+        print("\n" + "="*80)
+        print("ENRICHING MASTER DATAFRAME WITH SECTOR AND VALID STOCK NAMES")
+        print("="*80)
+
+        # Add sector column if not exists
+        if 'Sector' not in master_df.columns:
+            master_df['Sector'] = 'Other'
+
+        # Count invalid names
+        invalid_mask = ~master_df['Stock_Name'].apply(self.is_valid_stock_name)
+        invalid_count = invalid_mask.sum()
+        print(f"\nFound {invalid_count} invalid stock names ({invalid_count/len(master_df)*100:.1f}%)")
+
+        if invalid_count == 0:
+            print("✓ All stock names are valid!")
+            return master_df
+
+        # Get unique ISINs with invalid names
+        invalid_isins = master_df[invalid_mask]['ISIN'].unique()
+        print(f"Unique ISINs with invalid names: {len(invalid_isins)}")
+
+        # Load ticker mapping if available
+        ticker_mapping_path = os.path.join(os.path.dirname(__file__), 'data', 'isin_ticker_mapping.json')
+        ticker_mapping = {}
+
+        if os.path.exists(ticker_mapping_path):
+            with open(ticker_mapping_path, 'r') as f:
+                ticker_mapping = json.load(f)
+            print(f"Loaded ticker mapping for {len(ticker_mapping)} ISINs")
+        else:
+            print("⚠ No ticker mapping found. Will skip Yahoo Finance enrichment.")
+            return master_df
+
+        # Enrich invalid names
+        print(f"\nFetching stock info from Yahoo Finance for {len(invalid_isins)} ISINs...")
+        enrichment_data = {}
+        success_count = 0
+        fail_count = 0
+
+        for idx, isin in enumerate(invalid_isins):
+            if isin not in ticker_mapping:
+                fail_count += 1
+                continue
+
+            ticker = ticker_mapping[isin]
+
+            # Fetch from Yahoo Finance
+            info = self.get_stock_info_from_yahoo(ticker)
+
+            if info and info['name']:
+                enrichment_data[isin] = info
+                success_count += 1
+                print(f"  [{idx+1}/{len(invalid_isins)}] {isin} -> {info['name'][:40]} ({info['sector']})")
+            else:
+                fail_count += 1
+                print(f"  [{idx+1}/{len(invalid_isins)}] {isin} -> FAILED")
+
+            # Rate limiting
+            time.sleep(0.05)
+
+        print(f"\n✓ Fetched info for {success_count} stocks")
+        print(f"✗ Failed to fetch: {fail_count} stocks")
+
+        # Update dataframe with enriched data
+        print(f"\nUpdating dataframe...")
+        for isin, info in enrichment_data.items():
+            # Update stock names
+            mask = master_df['ISIN'] == isin
+            master_df.loc[mask, 'Stock_Name'] = info['name']
+            # Update sectors
+            master_df.loc[mask, 'Sector'] = info['sector']
+
+        # Count remaining invalid
+        still_invalid = ~master_df['Stock_Name'].apply(self.is_valid_stock_name)
+        print(f"\n✓ Valid stock names now: {(~still_invalid).sum()} ({(~still_invalid).sum()/len(master_df)*100:.1f}%)")
+        print(f"⚠ Still invalid: {still_invalid.sum()} ({still_invalid.sum()/len(master_df)*100:.1f}%)")
+
+        return master_df
 
     def extract_date_from_filename(self, filename):
         """Extract date from filename"""
@@ -587,6 +757,10 @@ def main():
 
     # Generate and print report
     print(extractor.logger.generate_report())
+
+    # Enrich master dataframe with valid stock names and sectors
+    if not master_df.empty:
+        master_df = extractor.enrich_master_dataframe(master_df)
 
     # Save results
     if not master_df.empty:
